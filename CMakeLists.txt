@@ -3,7 +3,7 @@ project(fluent-bit)
 
 # Fluent Bit Version
 set(FLB_VERSION_MAJOR  1)
-set(FLB_VERSION_MINOR  4)
+set(FLB_VERSION_MINOR  5)
 set(FLB_VERSION_PATCH  0)
 set(FLB_VERSION_STR "${FLB_VERSION_MAJOR}.${FLB_VERSION_MINOR}.${FLB_VERSION_PATCH}")
 
@@ -136,6 +136,7 @@ option(FLB_OUT_GELF           "Enable GELF output plugin"           Yes)
 option(FLB_OUT_HTTP           "Enable HTTP output plugin"           Yes)
 option(FLB_OUT_INFLUXDB       "Enable InfluxDB output plugin"       Yes)
 option(FLB_OUT_NATS           "Enable NATS output plugin"           Yes)
+option(FLB_OUT_NEWRELIC       "Enable New Relic output plugin"      Yes)
 option(FLB_OUT_TCP            "Enable TCP output plugin"            Yes)
 option(FLB_OUT_PLOT           "Enable Plot output plugin"           Yes)
 option(FLB_OUT_FILE           "Enable file output plugin"           Yes)
@@ -149,6 +150,7 @@ option(FLB_OUT_STDOUT         "Enable STDOUT output plugin"         Yes)
 option(FLB_OUT_LIB            "Enable library mode output plugin"   Yes)
 option(FLB_OUT_NULL           "Enable dev null output plugin"       Yes)
 option(FLB_OUT_FLOWCOUNTER    "Enable flowcount output plugin"      Yes)
+option(FLB_OUT_LOGDNA         "Enable LogDNA output plugin"         Yes)
 option(FLB_OUT_KAFKA          "Enable Kafka output plugin"           No)
 option(FLB_OUT_KAFKA_REST     "Enable Kafka Rest output plugin"     Yes)
 option(FLB_FILTER_AWS         "Enable aws filter"                   Yes)
@@ -163,6 +165,9 @@ option(FLB_FILTER_THROTTLE    "Enable throttle filter"              Yes)
 option(FLB_FILTER_NEST        "Enable nest filter"                  Yes)
 option(FLB_FILTER_LUA         "Enable Lua scripting filter"         Yes)
 option(FLB_FILTER_RECORD_MODIFIER "Enable record_modifier filter"   Yes)
+
+# Debug callbacks
+option(FLB_HTTP_CLIENT_DEBUG  "Enable HTTP Client debug callbacks"   No)
 
 # Enable all features
 if(FLB_ALL)
@@ -201,11 +206,12 @@ if(FLB_ALL)
 endif()
 
 if(FLB_DEV)
-  set(FLB_DEBUG          On)
-  set(FLB_TRACE          On)
-  set(FLB_METRICS        On)
-  set(FLB_HTTP_SERVER    On)
-  set(FLB_TESTS_INTERNAL On)
+  set(FLB_DEBUG             On)
+  set(FLB_TRACE             On)
+  set(FLB_METRICS           On)
+  set(FLB_HTTP_SERVER       On)
+  set(FLB_HTTP_CLIENT_DEBUG On)
+  set(FLB_TESTS_INTERNAL    On)
 endif()
 
 # SSL/TLS: add encryption support
@@ -213,6 +219,9 @@ if(FLB_OUT_TD)
   set(FLB_TLS ON)
 endif()
 
+if(FLB_HTTP_CLIENT_DEBUG)
+  FLB_DEFINITION(FLB_HAVE_HTTP_CLIENT_DEBUG)
+endif()
 
 # Set Fluent Bit dependency libraries path
 include(cmake/libraries.cmake)
@@ -340,7 +349,7 @@ endif()
 
 # MK Core
 macro(MK_SET_OPTION option value)
-  set(${option} ${value} CACHE "" INTERNAL FORCE)
+  set(${option} ${value} CACHE INTERNAL "" FORCE)
 endmacro()
 MK_SET_OPTION(MK_SYSTEM_MALLOC  ON)
 MK_SET_OPTION(MK_DEBUG          ON)
